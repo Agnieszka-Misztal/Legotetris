@@ -4,6 +4,7 @@ import (
 	"image"
 	_ "image/png"
 	"os"
+	"time"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
@@ -14,7 +15,7 @@ func run() {
 	cfg := pixelgl.WindowConfig{
 		Title:  "LEGO TETRIS",
 		Bounds: pixel.R(0, 0, 1024, 768),
-		VSync:  true,
+		VSync:  true, // synchronizacja z predkoscia odswiezania monitora
 	}
 
 	win, err := pixelgl.NewWindow(cfg)
@@ -25,6 +26,10 @@ func run() {
 	positionX := win.Bounds().Center().X // pozycja klocka
 	positionY := win.Bounds().Center().Y
 
+	lastTime := time.Now()
+	leftRightTime := 0.0 // zmienna do zliczania czasu
+	moveLeftOrRight := 0
+
 	pic, err := loadPicture("brickBlack.png")
 	if err != nil {
 		panic(err)
@@ -33,14 +38,22 @@ func run() {
 	sprite := pixel.NewSprite(pic, pic.Bounds()) //obiekt sluzacy do wyswietlenia obrazka
 
 	for !win.Closed() {
+		dt := time.Since(lastTime).Seconds() // czas ktory uplynal od poprzedniej klatki
+		lastTime = time.Now()
+
+		leftRightTime += dt
+		moveLeftOrRight = 0
+
 		win.Clear(colornames.Lightsteelblue) //wyczyszczenie okna przed wyswietleniem
 
 		if win.Pressed(pixelgl.KeyLeft) {
-			positionX--
+			moveLeftOrRight = -1
+			//positionX--
 
 		}
 		if win.Pressed(pixelgl.KeyRight) {
-			positionX++
+			moveLeftOrRight = 1
+			//positionX++
 
 		}
 		if win.Pressed(pixelgl.KeyDown) {
@@ -50,6 +63,11 @@ func run() {
 		if win.Pressed(pixelgl.KeyUp) {
 			positionY++
 
+		}
+
+		if leftRightTime >= 0.1 && moveLeftOrRight != 0 {
+			leftRightTime = 0.0
+			positionX += float64(moveLeftOrRight)
 		}
 		sprite.Draw(win, pixel.IM.Moved(pixel.V(positionX, positionY)))
 
