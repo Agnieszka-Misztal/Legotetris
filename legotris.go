@@ -15,6 +15,23 @@ func run() {
 
 	//var greed [20][10]int
 
+	figures := [7][4]int{
+		{1, 3, 5, 7}, // I  0 1
+		{2, 4, 5, 7}, // Z  2 3
+		{3, 5, 4, 6}, // S  4 5
+		{1, 3, 2, 5}, // T  6 7
+		{2, 3, 5, 7}, // L
+		{3, 5, 7, 6}, // J
+		{2, 3, 4, 5}, // O
+	}
+
+	var figure [4]pixel.Vec //4 pozycje klocka, vectory
+
+	for i := 0; i < 4; i++ {
+		figure[i].X = float64(figures[3][i] % 2) //ustawienie x na 0 lub 1
+		figure[i].Y = float64(figures[3][i] / 2) //ustawienie y od 0 do 3
+	}
+
 	cfg := pixelgl.WindowConfig{
 		Title:  "LEGO TETRIS",
 		Bounds: pixel.R(0, 0, 1024, 768),
@@ -73,13 +90,15 @@ func run() {
 			positionX += float64(moveLeftOrRight)
 		}
 
-		block.Draw(win, pixel.IM.Moved(pixel.V(positionX, positionY)))
+		// for y := 0; y < 20; y++ {
+		// 	for x := 0; x < 10; x++ {
 
-		for y := 0; y < 20; y++ {
-			for x := 0; x < 10; x++ {
+		// 		block.Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16+400), float64(y*25+16+50))))
+		// 	}
+		// }
 
-				block.Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16+400), float64(y*25+16+50))))
-			}
+		for i := 0; i < 4; i++ {
+			block.Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0, figure[i].Y*25+16.0)))
 		}
 
 		win.Update() // odswiezenie okna
