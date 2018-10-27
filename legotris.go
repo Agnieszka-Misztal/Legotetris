@@ -12,6 +12,9 @@ import (
 )
 
 func run() {
+
+	//var greed [20][10]int
+
 	cfg := pixelgl.WindowConfig{
 		Title:  "LEGO TETRIS",
 		Bounds: pixel.R(0, 0, 1024, 768),
@@ -35,7 +38,7 @@ func run() {
 		panic(err)
 	}
 
-	sprite := pixel.NewSprite(pic, pic.Bounds()) //obiekt sluzacy do wyswietlenia obrazka
+	block := pixel.NewSprite(pic, pic.Bounds()) //obiekt sluzacy do wyswietlenia obrazka
 
 	for !win.Closed() {
 		dt := time.Since(lastTime).Seconds() // czas ktory uplynal od poprzedniej klatki
@@ -69,7 +72,15 @@ func run() {
 			leftRightTime = 0.0
 			positionX += float64(moveLeftOrRight)
 		}
-		sprite.Draw(win, pixel.IM.Moved(pixel.V(positionX, positionY)))
+
+		block.Draw(win, pixel.IM.Moved(pixel.V(positionX, positionY)))
+
+		for y := 0; y < 20; y++ {
+			for x := 0; x < 10; x++ {
+
+				block.Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16+400), float64(y*25+16+50))))
+			}
+		}
 
 		win.Update() // odswiezenie okna
 	}
