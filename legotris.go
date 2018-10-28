@@ -13,7 +13,7 @@ import (
 
 func run() {
 
-	//var greed [20][10]int
+	var grid [20][10]int
 
 	figures := [7][4]int{
 		{1, 3, 5, 7}, // I  0 1
@@ -80,6 +80,7 @@ func run() {
 
 		}
 		if win.Pressed(pixelgl.KeyDown) {
+			moveDwonTime = 1.0
 			positionY--
 
 		}
@@ -113,23 +114,52 @@ func run() {
 				figure[i].Y--
 
 			}
+
+			// sprawdzanie kolizji od dolu ze sciena lub klockiem, jezeli jest cofnij o jedno do gory
+			// wpisz na plansze, wypelniajac jedynkami
+			if checkCollision(grid, figure) {
+
+				for i := 0; i < 4; i++ {
+					x := int(figure[i].X)
+					y := int(figure[i].Y + 1)
+					grid[y][x] = 1
+
+				}
+
+				//stworzenie klocka
+				for i := 0; i < 4; i++ {
+					figure[i].X = float64(figures[3][i] % 2)    //ustawienie x na 0 lub 1
+					figure[i].Y = float64(figures[3][i]/2 + 16) //ustawienie y od 0 do 3
+				}
+			}
 		}
 
 		if leftRightTime >= 0.1 && moveLeftOrRight != 0 {
 			leftRightTime = 0.0
+
 			for i := 0; i < 4; i++ {
 				figure[i].X += float64(moveLeftOrRight)
 
 			}
 
+			//jezeli wykryto kolizje, cofinj przesuniecie
+			if checkCollision(grid, figure) {
+				for i := 0; i < 4; i++ {
+					figure[i].X -= float64(moveLeftOrRight)
+
+				}
+			}
+
 		}
 
-		// for y := 0; y < 20; y++ {
-		// 	for x := 0; x < 10; x++ {
+		for y := 0; y < 20; y++ {
+			for x := 0; x < 10; x++ {
+				if grid[y][x] > 0 {
 
-		// 		block.Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16+400), float64(y*25+16+50))))
-		// 	}
-		// }
+					block.Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16), float64(y*25+16))))
+				}
+			}
+		}
 
 		//rysowanie klocka
 		for i := 0; i < 4; i++ {
