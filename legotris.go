@@ -154,6 +154,28 @@ func loadPicture(path string) (pixel.Picture, error) {
 	return pixel.PictureDataFromImage(img), nil
 }
 
+func checkCollision(grid [20][10]int, figure [4]pixel.Vec) bool {
+	for i := 0; i < 4; i++ {
+
+		//sprawdzanie czy klocek nie wychodzi poza boczne sciany
+		if figure[i].X < 0 || figure[i].X > 9 {
+			return true
+		}
+
+		//sprawdzanie czy klocek nie wyszedl za nisko, y
+		if figure[i].Y < 0 {
+			return true
+		}
+
+		//sprawdzanie czy na miejscu klocka jest juz inny klocek
+		if grid[int(figure[i].Y)][int(figure[i].X)] > 0 {
+			return true
+		}
+
+	}
+	return false
+}
+
 func main() {
 	pixelgl.Run(run)
 }
