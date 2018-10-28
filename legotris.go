@@ -27,9 +27,10 @@ func run() {
 
 	var figure [4]pixel.Vec //4 pozycje klocka, vectory
 
+	//stworzenie klocka
 	for i := 0; i < 4; i++ {
-		figure[i].X = float64(figures[3][i] % 2) //ustawienie x na 0 lub 1
-		figure[i].Y = float64(figures[3][i] / 2) //ustawienie y od 0 do 3
+		figure[i].X = float64(figures[3][i] % 2)    //ustawienie x na 0 lub 1
+		figure[i].Y = float64(figures[3][i]/2 + 16) //ustawienie y od 0 do 3
 	}
 
 	cfg := pixelgl.WindowConfig{
@@ -43,12 +44,13 @@ func run() {
 		panic(err)
 	}
 
-	positionX := win.Bounds().Center().X // pozycja klocka
+	//positionX := win.Bounds().Center().X // pozycja klocka
 	positionY := win.Bounds().Center().Y
 
 	lastTime := time.Now()
 	leftRightTime := 0.0 // zmienna do zliczania czasu
 	moveLeftOrRight := 0
+	moveDwonTime := 0.0
 
 	pic, err := loadPicture("brickBlack.png")
 	if err != nil {
@@ -62,6 +64,7 @@ func run() {
 		lastTime = time.Now()
 
 		leftRightTime += dt
+		moveDwonTime += dt
 		moveLeftOrRight = 0
 
 		win.Clear(colornames.Lightsteelblue) //wyczyszczenie okna przed wyswietleniem
@@ -85,9 +88,21 @@ func run() {
 
 		}
 
+		if moveDwonTime >= 1.0 {
+			moveDwonTime = 0.0
+			for i := 0; i < 4; i++ {
+				figure[i].Y--
+
+			}
+		}
+
 		if leftRightTime >= 0.1 && moveLeftOrRight != 0 {
 			leftRightTime = 0.0
-			positionX += float64(moveLeftOrRight)
+			for i := 0; i < 4; i++ {
+				figure[i].X += float64(moveLeftOrRight)
+
+			}
+
 		}
 
 		// for y := 0; y < 20; y++ {
@@ -97,6 +112,7 @@ func run() {
 		// 	}
 		// }
 
+		//rysowanie klocka
 		for i := 0; i < 4; i++ {
 			block.Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0, figure[i].Y*25+16.0)))
 		}
