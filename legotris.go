@@ -83,8 +83,27 @@ func run() {
 			positionY--
 
 		}
-		if win.Pressed(pixelgl.KeyUp) {
-			positionY++
+		if win.JustPressed(pixelgl.KeyUp) { // just pressed zadziala tylko raz
+			// pobranie lokalizacji srodka do obracania klocka, zawsze drugi element
+			centerBlockX := figure[1].X
+			centerBlockY := figure[1].Y
+
+			for i := 0; i < 4; i++ {
+				// wyznaczenie wkatora kierunku dla kazdego elemntu
+				x := figure[i].X - centerBlockX
+				y := figure[i].Y - centerBlockY
+
+				//obrot wektora kierunku o 90 st w pawo, przemnozenie przez macierz obrotu
+				//nowe wpolrzedne
+				// mnozenie macierzy obroty przez wektor
+				x1 := 0.0*x + 1.0*y
+				y1 := -1.0*x + 0.0*y
+
+				//ustalenie polozenia klocka na planszy (dodanie do pozycji srodka)
+				figure[i].X = x1 + centerBlockX
+				figure[i].Y = y1 + centerBlockY
+
+			}
 
 		}
 
