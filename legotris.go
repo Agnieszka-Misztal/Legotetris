@@ -3,6 +3,7 @@ package main
 import (
 	"image"
 	_ "image/png"
+	"math/rand"
 	"os"
 	"time"
 
@@ -25,12 +26,16 @@ func run() {
 		{2, 3, 4, 5}, // O
 	}
 
+	rand.Seed(time.Now().UnixNano())
+	figureType := rand.Intn(7)
+	figureColor := rand.Intn(6)
+
 	var figure [4]pixel.Vec //4 pozycje klocka, vectory
 
 	//stworzenie klocka
 	for i := 0; i < 4; i++ {
-		figure[i].X = float64(figures[3][i] % 2)    //ustawienie x na 0 lub 1
-		figure[i].Y = float64(figures[3][i]/2 + 16) //ustawienie y od 0 do 3
+		figure[i].X = float64(figures[figureType][i] % 2)    //ustawienie x na 0 lub 1
+		figure[i].Y = float64(figures[figureType][i]/2 + 16) //ustawienie y od 0 do 3
 	}
 
 	cfg := pixelgl.WindowConfig{
@@ -56,8 +61,38 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
+	pic2, err := loadPicture("brickBlue.png")
+	if err != nil {
+		panic(err)
+	}
+
+	pic3, err := loadPicture("brickGreen.png")
+	if err != nil {
+		panic(err)
+	}
+
+	pic4, err := loadPicture("brickRed.png")
+	if err != nil {
+		panic(err)
+	}
+
+	pic5, err := loadPicture("brickWhite.png")
+	if err != nil {
+		panic(err)
+	}
+	pic6, err := loadPicture("brickYellow.png")
+	if err != nil {
+		panic(err)
+	}
 
 	block := pixel.NewSprite(pic, pic.Bounds()) //obiekt sluzacy do wyswietlenia obrazka
+	block2 := pixel.NewSprite(pic2, pic2.Bounds())
+	block3 := pixel.NewSprite(pic3, pic3.Bounds())
+	block4 := pixel.NewSprite(pic4, pic4.Bounds())
+	block5 := pixel.NewSprite(pic5, pic5.Bounds())
+	block6 := pixel.NewSprite(pic6, pic6.Bounds())
+
+	coloredBlocks := [6]*pixel.Sprite{block, block2, block3, block4, block5, block6}
 
 	for !win.Closed() {
 		dt := time.Since(lastTime).Seconds() // czas ktory uplynal od poprzedniej klatki
@@ -122,14 +157,19 @@ func run() {
 				for i := 0; i < 4; i++ {
 					x := int(figure[i].X)
 					y := int(figure[i].Y + 1)
-					grid[y][x] = 1
+
+					//tabica od 0, a zakaldamy ze 0 to puste miejsce na tablicy
+					grid[y][x] = figureColor + 1
 
 				}
 
-				//stworzenie klocka
+				figureType = rand.Intn(7)
+				figureColor = rand.Intn(6)
+
+				//stworzenie klocka od nowa do góry
 				for i := 0; i < 4; i++ {
-					figure[i].X = float64(figures[3][i] % 2)    //ustawienie x na 0 lub 1
-					figure[i].Y = float64(figures[3][i]/2 + 16) //ustawienie y od 0 do 3
+					figure[i].X = float64(figures[figureType][i] % 2)    //ustawienie x na 0 lub 1
+					figure[i].Y = float64(figures[figureType][i]/2 + 16) //ustawienie y od 0 do 3
 				}
 			}
 		}
@@ -151,19 +191,19 @@ func run() {
 			}
 
 		}
-
+		//rysowanie planszy/grid
 		for y := 0; y < 20; y++ {
 			for x := 0; x < 10; x++ {
 				if grid[y][x] > 0 {
 
-					block.Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16), float64(y*25+16))))
+					coloredBlocks[grid[y][x]-1].Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16), float64(y*25+16))))
 				}
 			}
 		}
 
 		//rysowanie klocka
 		for i := 0; i < 4; i++ {
-			block.Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0, figure[i].Y*25+16.0)))
+			coloredBlocks[figureColor].Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0, figure[i].Y*25+16.0)))
 		}
 
 		win.Update() // odswiezenie okna
