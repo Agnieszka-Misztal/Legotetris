@@ -220,6 +220,29 @@ func run() {
 			}
 
 		}
+
+		//sprawdzanie czy jest zapelniona linia
+		lineToOverwrite := 0
+
+		// for po wszytkich wierszach
+		for y := 0; y < 20; y++ {
+
+			columnCount := 0
+
+			for x := 0; x < 10; x++ {
+
+				if grid[y][x] > 0 {
+					columnCount++
+				}
+
+				grid[lineToOverwrite][x] = grid[y][x]
+			}
+
+			if columnCount < 10 {
+
+				lineToOverwrite++
+			}
+		}
 		//rysowanie planszy/grid
 		for y := 0; y < 20; y++ {
 			for x := 0; x < 10; x++ {
