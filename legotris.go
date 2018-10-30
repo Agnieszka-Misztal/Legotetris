@@ -5,6 +5,7 @@ import (
 	_ "image/png"
 	"math/rand"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -31,6 +32,7 @@ func run() {
 	figureColor := rand.Intn(6)
 
 	var figure [4]pixel.Vec //4 pozycje klocka, vectory
+	var figureTemp [4]pixel.Vec
 
 	//stworzenie klocka
 	for i := 0; i < 4; i++ {
@@ -40,7 +42,7 @@ func run() {
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "LEGO TETRIS",
-		Bounds: pixel.R(0, 0, 1024, 768),
+		Bounds: pixel.R(0, 0, 320, 500),
 		VSync:  true, // synchronizacja z predkoscia odswiezania monitora
 	}
 
@@ -119,7 +121,14 @@ func run() {
 			positionY--
 
 		}
+		//obracanie klocka!!!!!
 		if win.JustPressed(pixelgl.KeyUp) { // just pressed zadziala tylko raz
+
+			for i := 0; i < 4; i++ {
+
+				figureTemp[i] = figure[i]
+			}
+
 			// pobranie lokalizacji srodka do obracania klocka, zawsze drugi element
 			centerBlockX := figure[1].X
 			centerBlockY := figure[1].Y
@@ -140,9 +149,17 @@ func run() {
 				figure[i].Y = y1 + centerBlockY
 
 			}
+			if checkCollision(grid, figure) {
+				for i := 0; i < 4; i++ {
+
+					figure[i] = figureTemp[i]
+				}
+
+			}
 
 		}
 
+		//opadanie klocka
 		if moveDwonTime >= 1.0 {
 			moveDwonTime = 0.0
 			for i := 0; i < 4; i++ {
@@ -170,6 +187,18 @@ func run() {
 				for i := 0; i < 4; i++ {
 					figure[i].X = float64(figures[figureType][i] % 2)    //ustawienie x na 0 lub 1
 					figure[i].Y = float64(figures[figureType][i]/2 + 16) //ustawienie y od 0 do 3
+				}
+
+				//sprawdzanie kolizji czy nowotowrzony klocek nie nachodzi na inny, czy koniec gry
+				if checkCollision(grid, figure) {
+
+					for y := 0; y < 20; y++ {
+						for x := 0; x < 10; x++ {
+							grid[y][x] = 0
+
+						}
+
+					}
 				}
 			}
 		}
@@ -201,6 +230,11 @@ func run() {
 			}
 		}
 
+		//sortowanie rysowania klocka od najnizszych elementow (wg Y)
+
+		sort.Slice(figure[:], func(i, j int) bool {
+			return figure[i].Y < figure[j].Y
+		})
 		//rysowanie klocka
 		for i := 0; i < 4; i++ {
 			coloredBlocks[figureColor].Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0, figure[i].Y*25+16.0)))
