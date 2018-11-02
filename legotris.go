@@ -3,14 +3,19 @@ package main
 import (
 	"image"
 	_ "image/png"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/faiface/pixel/text"
+	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/colornames"
+	"golang.org/x/image/font"
 )
 
 func run() {
@@ -34,6 +39,8 @@ func run() {
 	var figure [4]pixel.Vec //4 pozycje klocka, vectory
 	var figureTemp [4]pixel.Vec
 
+	score := 0
+
 	//stworzenie klocka
 	for i := 0; i < 4; i++ {
 		figure[i].X = float64(figures[figureType][i] % 2)    //ustawienie x na 0 lub 1
@@ -42,7 +49,7 @@ func run() {
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "LEGO TETRIS",
-		Bounds: pixel.R(0, 0, 320, 500),
+		Bounds: pixel.R(0, 0, 1024, 768),
 		VSync:  true, // synchronizacja z predkoscia odswiezania monitora
 	}
 
@@ -50,6 +57,15 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
+
+	// załadowanie fonta
+	face, err := loadTTF("Legothick.ttf", 80)
+	if err != nil {
+		panic(err)
+	}
+	// wygenerowanie z fontu obrazka
+	atlas := text.NewAtlas(face, text.ASCII)
+	txt := text.New(pixel.V(312, 680), atlas)
 
 	//positionX := win.Bounds().Center().X // pozycja klocka
 	positionY := win.Bounds().Center().Y
@@ -105,6 +121,9 @@ func run() {
 		moveLeftOrRight = 0
 
 		win.Clear(colornames.Lightsteelblue) //wyczyszczenie okna przed wyswietleniem
+
+		txt.Clear()
+		txt.WriteString("SCORE " + strconv.Itoa(score))
 
 		if win.Pressed(pixelgl.KeyLeft) {
 			moveLeftOrRight = -1
@@ -170,6 +189,7 @@ func run() {
 			// sprawdzanie kolizji od dolu ze sciena lub klockiem, jezeli jest cofnij o jedno do gory
 			// wpisz na plansze, wypelniajac jedynkami
 			if checkCollision(grid, figure) {
+				score += 10
 
 				for i := 0; i < 4; i++ {
 					x := int(figure[i].X)
@@ -241,6 +261,8 @@ func run() {
 			if columnCount < 10 {
 
 				lineToOverwrite++
+			} else {
+				score += 100
 			}
 		}
 		//rysowanie planszy/grid
@@ -248,7 +270,7 @@ func run() {
 			for x := 0; x < 10; x++ {
 				if grid[y][x] > 0 {
 
-					coloredBlocks[grid[y][x]-1].Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16), float64(y*25+16))))
+					coloredBlocks[grid[y][x]-1].Draw(win, pixel.IM.Moved(pixel.V(float64(x*32+16+352), float64(y*25+16+134))))
 				}
 			}
 		}
@@ -260,8 +282,10 @@ func run() {
 		})
 		//rysowanie klocka
 		for i := 0; i < 4; i++ {
-			coloredBlocks[figureColor].Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0, figure[i].Y*25+16.0)))
+			coloredBlocks[figureColor].Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0+352, figure[i].Y*25+16.0+134)))
 		}
+		//rysowanie wyniku
+		txt.Draw(win, pixel.IM)
 
 		win.Update() // odswiezenie okna
 	}
@@ -301,6 +325,29 @@ func checkCollision(grid [20][10]int, figure [4]pixel.Vec) bool {
 
 	}
 	return false
+}
+
+func loadTTF(path string, size float64) (font.Face, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	font, err := truetype.Parse(bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return truetype.NewFace(font, &truetype.Options{
+		Size:              size,
+		GlyphCacheEntries: 1,
+	}), nil
 }
 
 func main() {
