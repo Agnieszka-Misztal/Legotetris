@@ -35,8 +35,11 @@ func run() {
 	rand.Seed(time.Now().UnixNano())
 	figureType := rand.Intn(7)
 	figureColor := rand.Intn(6)
+	figureTypeNext := rand.Intn(7)
+	figureColorNext := rand.Intn(6)
 
 	var figure [4]pixel.Vec //4 pozycje klocka, vectory
+	var figureNext [4]pixel.Vec
 	var figureTemp [4]pixel.Vec
 
 	score := 0
@@ -45,6 +48,10 @@ func run() {
 	for i := 0; i < 4; i++ {
 		figure[i].X = float64(figures[figureType][i] % 2)    //ustawienie x na 0 lub 1
 		figure[i].Y = float64(figures[figureType][i]/2 + 16) //ustawienie y od 0 do 3
+	}
+	for i := 0; i < 4; i++ {
+		figureNext[i].X = float64(figures[figureTypeNext][i] % 2)    //ustawienie x na 0 lub 1
+		figureNext[i].Y = float64(figures[figureTypeNext][i]/2 + 16) //ustawienie y od 0 do 3
 	}
 
 	cfg := pixelgl.WindowConfig{
@@ -103,12 +110,18 @@ func run() {
 		panic(err)
 	}
 
+	backPic, err := loadPicture("back3.png")
+	if err != nil {
+		panic(err)
+	}
+
 	block := pixel.NewSprite(pic, pic.Bounds()) //obiekt sluzacy do wyswietlenia obrazka
 	block2 := pixel.NewSprite(pic2, pic2.Bounds())
 	block3 := pixel.NewSprite(pic3, pic3.Bounds())
 	block4 := pixel.NewSprite(pic4, pic4.Bounds())
 	block5 := pixel.NewSprite(pic5, pic5.Bounds())
 	block6 := pixel.NewSprite(pic6, pic6.Bounds())
+	backSprite := pixel.NewSprite(backPic, backPic.Bounds())
 
 	coloredBlocks := [6]*pixel.Sprite{block, block2, block3, block4, block5, block6}
 
@@ -200,8 +213,11 @@ func run() {
 
 				}
 
-				figureType = rand.Intn(7)
-				figureColor = rand.Intn(6)
+				figureType = figureTypeNext
+				figureColor = figureColorNext
+
+				figureTypeNext = rand.Intn(7)
+				figureColorNext = rand.Intn(6)
 
 				//stworzenie klocka od nowa do góry
 				for i := 0; i < 4; i++ {
@@ -209,9 +225,14 @@ func run() {
 					figure[i].Y = float64(figures[figureType][i]/2 + 16) //ustawienie y od 0 do 3
 				}
 
+				for i := 0; i < 4; i++ {
+					figureNext[i].X = float64(figures[figureTypeNext][i] % 2)    //ustawienie x na 0 lub 1
+					figureNext[i].Y = float64(figures[figureTypeNext][i]/2 + 16) //ustawienie y od 0 do 3
+				}
+
 				//sprawdzanie kolizji czy nowotowrzony klocek nie nachodzi na inny, czy koniec gry
 				if checkCollision(grid, figure) {
-
+					score = 0
 					for y := 0; y < 20; y++ {
 						for x := 0; x < 10; x++ {
 							grid[y][x] = 0
@@ -265,6 +286,9 @@ func run() {
 				score += 100
 			}
 		}
+
+		//rysowanie tła
+		backSprite.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
 		//rysowanie planszy/grid
 		for y := 0; y < 20; y++ {
 			for x := 0; x < 10; x++ {
@@ -283,6 +307,10 @@ func run() {
 		//rysowanie klocka
 		for i := 0; i < 4; i++ {
 			coloredBlocks[figureColor].Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0+352, figure[i].Y*25+16.0+134)))
+		}
+		//rysowanie klocka nastepnego w poczekalni
+		for i := 0; i < 4; i++ {
+			coloredBlocks[figureColorNext].Draw(win, pixel.IM.Moved(pixel.V(figureNext[i].X*32.0+16.0, figureNext[i].Y*25+16.0+134)))
 		}
 		//rysowanie wyniku
 		txt.Draw(win, pixel.IM)
