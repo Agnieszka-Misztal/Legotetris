@@ -181,6 +181,24 @@ func run() {
 				figure[i].Y = y1 + centerBlockY
 
 			}
+			//sprawdzanie czy poza plansza
+			sideMove := checkCollisionSides(grid, figure)
+			if sideMove != 0 {
+
+				if sideMove < 0 {
+					for i := 0; i < 4; i++ {
+						figure[i].X -= sideMove
+					}
+				}
+
+				if sideMove > 9 {
+					for i := 0; i < 4; i++ {
+						figure[i].X -= (sideMove - 9)
+					}
+
+				}
+			}
+
 			if checkCollision(grid, figure) {
 				for i := 0; i < 4; i++ {
 
@@ -301,12 +319,15 @@ func run() {
 
 		//sortowanie rysowania klocka od najnizszych elementow (wg Y)
 
-		sort.Slice(figure[:], func(i, j int) bool {
-			return figure[i].Y < figure[j].Y
+		for i := 0; i < 4; i++ {
+			figureTemp[i] = figure[i]
+		}
+		sort.Slice(figureTemp[:], func(i, j int) bool {
+			return figureTemp[i].Y < figureTemp[j].Y
 		})
 		//rysowanie klocka
 		for i := 0; i < 4; i++ {
-			coloredBlocks[figureColor].Draw(win, pixel.IM.Moved(pixel.V(figure[i].X*32.0+16.0+352, figure[i].Y*25+16.0+134)))
+			coloredBlocks[figureColor].Draw(win, pixel.IM.Moved(pixel.V(figureTemp[i].X*32.0+16.0+352, figureTemp[i].Y*25+16.0+134)))
 		}
 		//rysowanie klocka nastepnego w poczekalni
 		for i := 0; i < 4; i++ {
@@ -353,6 +374,22 @@ func checkCollision(grid [20][10]int, figure [4]pixel.Vec) bool {
 
 	}
 	return false
+}
+
+func checkCollisionSides(grid [20][10]int, figure [4]pixel.Vec) float64 {
+	sideX := 0.0
+	for i := 0; i < 4; i++ {
+
+		//sprawdzanie czy klocek nie wychodzi poza boczne sciany
+		if figure[i].X < 0 && figure[i].X < sideX {
+			sideX = figure[i].X
+
+		}
+		if figure[i].X > 9 && figure[i].X > sideX {
+			sideX = figure[i].X
+		}
+	}
+	return sideX
 }
 
 func loadTTF(path string, size float64) (font.Face, error) {
