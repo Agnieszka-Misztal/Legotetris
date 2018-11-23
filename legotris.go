@@ -65,6 +65,8 @@ func run() {
 		panic(err)
 	}
 
+	//win.SetSmooth(true)
+
 	// załadowanie fonta
 	face, err := loadTTF("Legothick.ttf", 80)
 	if err != nil {
@@ -331,7 +333,7 @@ func run() {
 		}
 		//rysowanie klocka nastepnego w poczekalni
 		for i := 0; i < 4; i++ {
-			coloredBlocks[figureColorNext].Draw(win, pixel.IM.Moved(pixel.V(figureNext[i].X*32.0+16.0, figureNext[i].Y*25+16.0+134)))
+			coloredBlocks[figureColorNext].Draw(win, pixel.IM.Moved(pixel.V(figureNext[i].X*32.0+16.0+64, figureNext[i].Y*25+16.0+134)))
 		}
 		//rysowanie wyniku
 		txt.Draw(win, pixel.IM)
